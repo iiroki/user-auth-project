@@ -115,7 +115,7 @@ var app = builder.Build();
 // API documentation
 app.UseSwagger();
 app.UseReDoc(options => {
-    options.DocumentTitle = "Web Shop Server API";
+    options.DocumentTitle = "User Auth Server API";
     options.SpecUrl = "/swagger/v1/swagger.json";
     options.ConfigObject.HideDownloadButton = true;
     options.ConfigObject.ExpandResponses = "200,201";
