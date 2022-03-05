@@ -72,8 +72,9 @@ builder.Services
         };
     });
 
-// Add custom JWT service
+// Add custom JWT service and email service
 builder.Services.AddScoped<ITokenService, JwtService>();
+builder.Services.AddScoped<IEmailConfirmService, EmailConfirmationSender>();
 
 // Configure controllers to use JSON
 builder.Services.Configure<MvcOptions>(options => {

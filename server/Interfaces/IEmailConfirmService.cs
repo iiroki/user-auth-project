@@ -1,5 +1,7 @@
+using UserAuthServer.Models;
+
 namespace UserAuthServer.Interfaces;
 
 public interface IEmailConfirmService {
-    void sendConfirmationEmail(string confirmToken);
+    Task SendConfirmationEmail(User user, string confirmToken);
 }

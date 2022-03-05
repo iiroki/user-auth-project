@@ -4,5 +4,5 @@ using UserAuthServer.Models;
 namespace UserAuthServer.Interfaces;
 
 public interface ITokenService {
-    AuthToken createToken(IList<Claim> claims);
+    AuthToken CreateToken(IList<Claim> claims);
 }

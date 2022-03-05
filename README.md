@@ -18,6 +18,7 @@ $ dotnet user-secrets set "PowerUser:Username" <Username>
 $ dotnet user-secrets set "PowerUser:Email" <Email>
 $ dotnet user-secrets set "PowerUser:Password" <Password>
 $ dotnet user-secrets set "PowerUser:Name" <Name>
+$ dotnet user-secrets set "Smtp:Password" <Password>
 ```
 
 Start the server:

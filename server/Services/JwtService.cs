@@ -19,7 +19,7 @@ public class JwtService : ITokenService {
         this.JwtSecret = config["Jwt:Secret"];
     }
 
-    public AuthToken createToken(IList<Claim> claims) {
+    public AuthToken CreateToken(IList<Claim> claims) {
         var authSignKey = AuthSignKeyFactory.CreateAuthSignKey(this.JwtSecret);
         var tokenDescriptor = new SecurityTokenDescriptor {
             Subject = new ClaimsIdentity(claims),
@@ -28,7 +28,7 @@ public class JwtService : ITokenService {
         };
 
         var token = this.TokenHandler.CreateToken(tokenDescriptor);
-        this.Logger.LogDebug($"{nameof(createToken)} | Created token with claims: {String.Join(", ", claims)}");
+        this.Logger.LogDebug($"{nameof(CreateToken)} | Created token with claims: {String.Join(", ", claims)}");
 
         return new AuthToken {
             SecurityToken = token,

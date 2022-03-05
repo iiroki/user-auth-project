@@ -16,16 +16,19 @@ public class AuthController : ControllerBase {
     private readonly UserManager<User> UserManager;
     private readonly IdentityOptions IdentityOptions;
     private readonly ITokenService TokenService;
+    private readonly IEmailConfirmService EmailConfirmService;
 
     public AuthController(
             ILogger<AuthController> logger,
             UserManager<User> userManager,
             IOptions<IdentityOptions> options,
-            ITokenService tokenService) {
+            ITokenService tokenService,
+            IEmailConfirmService emailConfirmService) {
         this.Logger = logger;
         this.UserManager = userManager;
         this.IdentityOptions = options.Value;
         this.TokenService = tokenService;
+        this.EmailConfirmService = emailConfirmService;
     }
 
     /// <summary>
@@ -59,7 +62,7 @@ public class AuthController : ControllerBase {
             claims.Add(new Claim(this.IdentityOptions.ClaimsIdentity.RoleClaimType, role));
         }
 
-        var token = this.TokenService.createToken(claims);
+        var token = this.TokenService.CreateToken(claims);
         this.Logger.LogDebug($"{nameof(LogIn)} | ID: {user.Id}, Username: {user.UserName}");
 
         return Ok(new AuthTokenDto {
@@ -76,7 +79,7 @@ public class AuthController : ControllerBase {
         var user = await this.UserManager.FindByEmailAsync(email.Email);
         if (user != null) {
             var token = await this.UserManager.GenerateEmailConfirmationTokenAsync(user);
-            // TODO: Send email
+            await this.EmailConfirmService.SendConfirmationEmail(user, token);
         }
 
         return NoContent();
