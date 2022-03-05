@@ -60,7 +60,7 @@ public class AuthController : ControllerBase {
         }
 
         var token = this.TokenService.createToken(claims);
-        this.Logger.LogDebug($"{nameof(LogIn)} | ID: {user.Id} - Username: {user.UserName}");
+        this.Logger.LogDebug($"{nameof(LogIn)} | ID: {user.Id}, Username: {user.UserName}");
 
         return Ok(new AuthTokenDto {
             Token = token.Jwt,
@@ -76,17 +76,28 @@ public class AuthController : ControllerBase {
         var user = await this.UserManager.FindByEmailAsync(email.Email);
         if (user != null) {
             var token = await this.UserManager.GenerateEmailConfirmationTokenAsync(user);
-            Console.WriteLine("Email confirm token: " + token);
-            // TODO
+            // TODO: Send email
         }
 
         return NoContent();
     }
 
     [HttpPost("email-confirm")]
-    public async Task<IActionResult> ConfirmEmail(EmailConfirmToken token) {
-        this.Logger.LogDebug($"{nameof(ConfirmEmail)} | Token: {token.Token}");
+    public async Task<IActionResult> ConfirmEmail(
+            [FromQuery(Name = "userId")] string userId,
+            [FromQuery(Name = "token")] string token) {
+        var encodedToken = token.Replace(' ', '+');
+        this.Logger.LogDebug($"{nameof(ConfirmEmail)} | User ID: {userId}, Token: {encodedToken}");
+        var user = await this.UserManager.FindByIdAsync(userId);
+        if (user == null) {
+            return NotFound();
+        }
 
-        return NoContent();
+        var result = await this.UserManager.ConfirmEmailAsync(user, encodedToken);
+        if (!result.Succeeded) {
+            return BadRequest("Email confirmation failed");
+        }
+
+        return Ok("Email confirmed successfully");
     }
 }
