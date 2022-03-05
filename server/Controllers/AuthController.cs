@@ -1,6 +1,4 @@
 using System.Security.Claims;
-using System.Web;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -39,10 +37,15 @@ public class AuthController : ControllerBase {
     [HttpPost("login")]
     [ProducesResponseType(typeof(AuthTokenDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> LogIn(LoginDto login) {
         var user = await this.UserManager.FindByNameAsync(login.Username);
         if (user == null || !(await this.UserManager.CheckPasswordAsync(user, login.Password))) {
             return Unauthorized(ResponseUtil.CreateProblemDetails("Invalid login credentials"));
+        }
+
+        if (!user.EmailConfirmed) {
+            return UnprocessableEntity(ResponseUtil.CreateProblemDetails("Email not confirmed"));
         }
 
         // Add identity claim
@@ -64,5 +67,26 @@ public class AuthController : ControllerBase {
             Expires = token.SecurityToken.ValidTo,
             Roles = userRoles.ToArray()
         });
+    }
+
+    [HttpPost("email-send-confirmation")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> SendConfirmationEmail(EmailDto email) {
+        this.Logger.LogDebug($"{nameof(SendConfirmationEmail)} | Email: {email.Email}");
+        var user = await this.UserManager.FindByEmailAsync(email.Email);
+        if (user != null) {
+            var token = await this.UserManager.GenerateEmailConfirmationTokenAsync(user);
+            Console.WriteLine("Email confirm token: " + token);
+            // TODO
+        }
+
+        return NoContent();
+    }
+
+    [HttpPost("email-confirm")]
+    public async Task<IActionResult> ConfirmEmail(EmailConfirmToken token) {
+        this.Logger.LogDebug($"{nameof(ConfirmEmail)} | Token: {token.Token}");
+
+        return NoContent();
     }
 }

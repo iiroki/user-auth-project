@@ -62,7 +62,7 @@ public class UserController : ControllerBase {
     ///     Create new user
     /// </summary>
     /// <remarks>
-    ///     Username must be unique.
+    ///     Username and email must be unique.
     /// </remarks>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -154,9 +154,13 @@ public class UserController : ControllerBase {
     [HttpPost("reset")]
     [Authorize(Roles = UserRole.Admin)]
     public async Task<IActionResult> Reset() {
-        this.Logger.LogDebug(nameof(Reset));
         if (!this.DevelopmentEnv) {
             return NotFound();
+        }
+
+        this.Logger.LogDebug(nameof(Reset));
+        if (await GetRequestUser() == null) {
+            return Unauthorized();
         }
 
         await this.UserManager.Users.ForEachAsync(async u => {
