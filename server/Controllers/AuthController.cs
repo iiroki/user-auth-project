@@ -1,10 +1,12 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using UserAuthServer.Interfaces;
 using UserAuthServer.Models;
 using UserAuthServer.Models.Dto;
+using UserAuthServer.Utils;
 
 namespace UserAuthServer.Controllers;
 
@@ -39,7 +41,7 @@ public class AuthController : ControllerBase {
     public async Task<IActionResult> LogIn(LoginDto login) {
         var user = await this.UserManager.FindByNameAsync(login.Username);
         if (user == null || !(await this.UserManager.CheckPasswordAsync(user, login.Password))) {
-            return Unauthorized();
+            return Unauthorized(ResponseUtil.CreateProblemDetails("Invalid login credentials"));
         }
 
         // Add identity claim
@@ -60,5 +62,35 @@ public class AuthController : ControllerBase {
             Token = token.Jwt,
             Expires = token.SecurityToken.ValidTo
         });
+    }
+
+    /// <summary>
+    ///     Log out
+    /// </summary>
+    /// <remarks>
+    ///     Marks the request JWT as invalid.
+    /// </remarks>
+    [HttpPost("logout")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LogOut() {
+        // TODO
+        return NoContent();
+    }
+
+    /// <summary>
+    ///     Get sessions
+    /// </summary>
+    /// <remarks>
+    ///     Returns login sessions that have not been expired.
+    /// </remarks>
+    [HttpPost("session")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetSessions() {
+        // TODO
+        return Ok();
     }
 }

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserAuthServer.Models;
 using UserAuthServer.Models.Dto;
+using UserAuthServer.Constants;
+using UserAuthServer.Utils;
+using UserAuthServer.Initialization;
 
 namespace UserAuthServer.Controllers;
 
@@ -13,14 +16,20 @@ public class UserController : ControllerBase {
     private readonly ILogger<UserController> Logger;
     private readonly UserManager<User> UserManager;
     private readonly RoleManager<IdentityRole> RoleManager;
+    private readonly IConfiguration Config;
+    private readonly bool DevelopmentEnv;
 
     public UserController(
             ILogger<UserController> logger,
             UserManager<User> userManager,
-            RoleManager<IdentityRole> roleManager) {
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration config,
+            IHostEnvironment hostingEnv) {
         this.Logger = logger;
         this.UserManager = userManager;
         this.RoleManager = roleManager;
+        this.Config = config;
+        this.DevelopmentEnv = hostingEnv.IsDevelopment();
     }
 
     /// <summary>
@@ -59,14 +68,16 @@ public class UserController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> CreateUser(UserCreateDto registration) {
+        this.Logger.LogDebug(nameof(CreateUser));
         var existingUser = await this.UserManager.FindByNameAsync(registration.Username);
         if (existingUser != null) {
-            return BadRequest();
+            return BadRequest(ResponseUtil.CreateProblemDetails("User already exists"));
         }
 
         var user = new User {
             UserName = registration.Username,
-            Name = registration.Name
+            Name = registration.Name,
+            Email = registration.Email
         };
 
         var result = await this.UserManager.CreateAsync(user, registration.Password);
@@ -123,6 +134,7 @@ public class UserController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteUser(string id, UserDeleteDto userDelete) {
+        this.Logger.LogDebug(nameof(DeleteUser));
         var user = await FindUserByIdIfTokenMatches(id);
         if (user == null) {
             return Forbid();
@@ -139,13 +151,29 @@ public class UserController : ControllerBase {
         return NoContent();
     }
 
+    [HttpPost("reset")]
+    [Authorize(Roles = UserRole.Admin)]
+    public async Task<IActionResult> Reset() {
+        this.Logger.LogDebug(nameof(Reset));
+        if (!this.DevelopmentEnv) {
+            return NotFound();
+        }
+
+        await this.UserManager.Users.ForEachAsync(async u => {
+            await this.UserManager.DeleteAsync(u);
+        });
+
+        await UserInitializer.seedUsers(this.UserManager, this.Config);
+        return NoContent();
+    }
+
     private async Task<User?> FindUserByIdIfTokenMatches(string id) {
         var user = await this.UserManager.FindByIdAsync(id);
         if (user == null) {
             return null;
         }
 
-        var httpUser = await this.UserManager.GetUserAsync(this.HttpContext.User);
+        var httpUser = await GetRequestUser();
         if (httpUser == null) {
             return null;
         }
@@ -153,8 +181,13 @@ public class UserController : ControllerBase {
         return user.Id.Equals(httpUser.Id) ? user : null;
     }
 
+    private async Task<User?> GetRequestUser() {
+        return await this.UserManager.GetUserAsync(this.HttpContext.User);
+    }
+
     private static UserDto UserToDto(User user) => new UserDto {
         Id = user.Id,
-        Name = user.Name
+        Name = user.Name,
+        Email = user.Email
     };
 }

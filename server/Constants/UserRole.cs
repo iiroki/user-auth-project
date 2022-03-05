@@ -1,4 +1,4 @@
-namespace UserAuthServer.Models;
+namespace UserAuthServer.Constants;
 
 public class UserRole {
     public const string Admin = "admin";

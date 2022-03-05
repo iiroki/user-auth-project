@@ -38,6 +38,12 @@ builder.Services.Configure<IdentityOptions>(options => {
     options.Password.RequireDigit = false;
     options.Password.RequireNonAlphanumeric = false;
 
+    // Email
+    options.User.RequireUniqueEmail = true;
+
+    // Sign in
+    options.SignIn.RequireConfirmedEmail = true;
+
     // User role claim options
     options.ClaimsIdentity.UserIdClaimType = CreateClaimType("UserId");
     options.ClaimsIdentity.UserNameClaimType = CreateClaimType("Username");
@@ -130,14 +136,15 @@ using (var scope = app.Services.CreateScope()) {
     // Ensure that needed secret values are set
     if (app.Configuration["Jwt:Secret"] == null
             || app.Configuration["PowerUser:Username"] == null
+            || app.Configuration["PowerUser:Email"] == null
             || app.Configuration["PowerUser:Password"] == null
             || app.Configuration["PowerUser:Name"] == null) {
         throw new InvalidOperationException("Necessary secrets not defined, check README.md for secrets!");
     }
 
     // Initialize user roles and users
-    UserInitializer.seedUserRoles(scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>());
-    UserInitializer.seedUsers(scope.ServiceProvider.GetRequiredService<UserManager<User>>(), app.Configuration);
+    await UserInitializer.seedUserRoles(scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>());
+    await UserInitializer.seedUsers(scope.ServiceProvider.GetRequiredService<UserManager<User>>(), app.Configuration);
 }
 
 app.Run();

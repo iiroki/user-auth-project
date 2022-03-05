@@ -15,6 +15,7 @@ Add the following secrets with .NET Core Secret Manager tool:
 $ cd server
 $ dotnet user-secrets set "Jwt:Secret" <JwtSecret>
 $ dotnet user-secrets set "PowerUser:Username" <Username>
+$ dotnet user-secrets set "PowerUser:Email" <Email>
 $ dotnet user-secrets set "PowerUser:Password" <Password>
 $ dotnet user-secrets set "PowerUser:Name" <Name>
 ```
