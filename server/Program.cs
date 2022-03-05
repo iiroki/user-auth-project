@@ -12,9 +12,6 @@ using UserAuthServer.Models;
 using UserAuthServer.Services;
 using UserAuthServer.Utils;
 
-// Helper function for defining claim types
-string CreateClaimType(string claim) => $"CLAIM_{claim}";
-
 // Helper function for database location
 string GetDbPath(string dbName) =>
     System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), dbName);
@@ -45,9 +42,9 @@ builder.Services.Configure<IdentityOptions>(options => {
     options.SignIn.RequireConfirmedEmail = true;
 
     // User role claim options
-    options.ClaimsIdentity.UserIdClaimType = CreateClaimType("UserId");
-    options.ClaimsIdentity.UserNameClaimType = CreateClaimType("Username");
-    options.ClaimsIdentity.RoleClaimType = CreateClaimType("Role");
+    options.ClaimsIdentity.UserIdClaimType = UserClaim.UserId;
+    options.ClaimsIdentity.UserNameClaimType = UserClaim.Username;
+    options.ClaimsIdentity.RoleClaimType = UserClaim.Role;
 });
 
 // Add user service
@@ -66,8 +63,8 @@ builder.Services
         options.SaveToken = true;
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters() {
-            NameClaimType = CreateClaimType("Username"),
-            RoleClaimType = CreateClaimType("Role"),
+            NameClaimType = UserClaim.Username,
+            RoleClaimType = UserClaim.Role,
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateIssuerSigningKey = false,

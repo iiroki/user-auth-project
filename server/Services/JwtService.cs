@@ -27,7 +27,6 @@ public class JwtService : ITokenService {
             SigningCredentials = new SigningCredentials(authSignKey, SecurityAlgorithms.HmacSha256)
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
         var token = this.TokenHandler.CreateToken(tokenDescriptor);
         this.Logger.LogDebug($"{nameof(createToken)} | Created token with claims: {String.Join(", ", claims)}");
 

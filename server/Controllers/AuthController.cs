@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -60,37 +61,8 @@ public class AuthController : ControllerBase {
 
         return Ok(new AuthTokenDto {
             Token = token.Jwt,
-            Expires = token.SecurityToken.ValidTo
+            Expires = token.SecurityToken.ValidTo,
+            Roles = userRoles.ToArray()
         });
-    }
-
-    /// <summary>
-    ///     Log out
-    /// </summary>
-    /// <remarks>
-    ///     Marks the request JWT as invalid.
-    /// </remarks>
-    [HttpPost("logout")]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> LogOut() {
-        // TODO
-        return NoContent();
-    }
-
-    /// <summary>
-    ///     Get sessions
-    /// </summary>
-    /// <remarks>
-    ///     Returns login sessions that have not been expired.
-    /// </remarks>
-    [HttpPost("session")]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetSessions() {
-        // TODO
-        return Ok();
     }
 }
