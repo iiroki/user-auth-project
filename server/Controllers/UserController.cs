@@ -96,7 +96,7 @@ public class UserController : ControllerBase {
     /// <remarks>
     ///     Password is changed if a new password is provided and the current password is correct.
     /// </remarks>
-    [HttpPut("{id}")]
+    [HttpPatch("{id}")]
     [Authorize(Roles = UserRole.User)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -72,11 +72,9 @@ builder.Services
         options.Events = new JwtBearerEvents {
             // Check that the token is access token
             OnTokenValidated = context => {
-                if (context.Principal != null) {
-                    var typeClaim = context.Principal.Claims.Where(c => c.Type == TokenClaim.Type).FirstOrDefault();
-                    if (typeClaim != null && typeClaim.Value != TokenType.Access.ToString()) {
-                        context.Fail(new Exception("Authorization must be done with access token"));
-                    }
+                if (context.Principal != null
+                        && !TokenUtil.HasTokenTypeClaim(context.Principal.Claims, TokenType.Access)) {
+                    context.Fail(new Exception("Authorization must be done with access token"));
                 }
 
                 return Task.CompletedTask;

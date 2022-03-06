@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using UserAuthServer.Constants;
 using UserAuthServer.Models;
@@ -6,9 +7,13 @@ using UserAuthServer.Models;
 namespace UserAuthServer.Utils;
 
 public class TokenUtil {
+    public static bool HasTokenTypeClaim(IEnumerable<Claim> claims, TokenType type) {
+        var typeClaim = claims.Where(c => c.Type == TokenClaim.Type).FirstOrDefault();
+        return typeClaim != null && typeClaim.Value == type.ToString();
+    }
+
     public static bool IsTokenType(JwtSecurityToken token, TokenType type) {
-        var tokenType = token.Claims.Where(c => c.Type == TokenClaim.Type).FirstOrDefault();
-        return tokenType != null && tokenType.Value == type.ToString();
+        return HasTokenTypeClaim(token.Claims, type);
     }
 
     public static async Task<User?> FindTokenUser(JwtSecurityToken token, UserManager<User> userManager) {
