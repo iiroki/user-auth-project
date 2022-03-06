@@ -65,7 +65,7 @@ public class AuthController : ControllerBase {
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(RefreshDto refresh) {
         var refreshToken = this.TokenService.ReadToken(refresh.Token);
-        if (!TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
+        if (refreshToken == null || !TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
             return BadRequest(ResponseUtil.CreateProblemDetails("Expected refresh token."));
         }
 

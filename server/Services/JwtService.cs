@@ -12,12 +12,19 @@ public class JwtService : ITokenService {
     private readonly ILogger<JwtService> Logger;
     private readonly string JwtSecret;
     private readonly JwtSecurityTokenHandler TokenHandler = new JwtSecurityTokenHandler();
+    private readonly TokenValidationParameters TokenValidationParameters;
 
     public JwtService(
             ILogger<JwtService> logger,
             IConfiguration config) {
         this.Logger = logger;
         this.JwtSecret = config["Jwt:Secret"];
+        this.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(this.JwtSecret),
+            ValidateAudience = false,
+            ValidateIssuer = false
+        };
     }
 
     public AuthenticationToken CreateToken(TokenType type, string userId) {
@@ -42,8 +49,13 @@ public class JwtService : ITokenService {
         };
     }
 
-    public JwtSecurityToken ReadToken(string token) {
-        return this.TokenHandler.ReadJwtToken(token);
+    public JwtSecurityToken? ReadToken(string token) {
+        try {
+            this.TokenHandler.ValidateToken(token, this.TokenValidationParameters, out var validToken);
+            return validToken as JwtSecurityToken;
+        } catch {
+            return null;
+        }
     }
 
     private DateTime CreateExpireDateTime(TokenType type) {
