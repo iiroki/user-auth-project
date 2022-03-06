@@ -7,5 +7,6 @@ public class UserCreateDto : LoginDto {
     public string Name { get; set; } = null!;
 
     [Required(ErrorMessage = "Email is required.")]
+    [DataType(DataType.EmailAddress)]
     public string Email { get; set; } = null!;
 }

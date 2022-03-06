@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using UserAuthServer.Constants;
 using UserAuthServer.Interfaces;
 using UserAuthServer.Models;
 using UserAuthServer.Models.Dto;
@@ -38,7 +40,7 @@ public class AuthController : ControllerBase {
     ///     Produces a JWT that can be used to authenticate an user.
     /// </remarks>
     [HttpPost("login")]
-    [ProducesResponseType(typeof(AuthTokenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RefreshTokenDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> LogIn(LoginDto login) {
@@ -51,24 +53,33 @@ public class AuthController : ControllerBase {
             return UnprocessableEntity(ResponseUtil.CreateProblemDetails("Email not confirmed"));
         }
 
-        // Add identity claim
-        var claims = new List<Claim> {
-            new Claim(this.IdentityOptions.ClaimsIdentity.UserIdClaimType, user.Id)
-        };
-
-        // Add role claims
-        var userRoles = await this.UserManager.GetRolesAsync(user);
-        foreach (var role in userRoles) {
-            claims.Add(new Claim(this.IdentityOptions.ClaimsIdentity.RoleClaimType, role));
-        }
-
-        var token = this.TokenService.CreateToken(claims);
+        var token = this.TokenService.CreateToken(TokenType.Refresh, user.Id);
         this.Logger.LogDebug($"{nameof(LogIn)} | ID: {user.Id}, Username: {user.UserName}");
 
-        return Ok(new AuthTokenDto {
-            Token = token.Jwt,
-            Expires = token.SecurityToken.ValidTo,
-            Roles = userRoles.ToArray()
+        return Ok(new RefreshTokenDto {
+            Token = token.Token,
+            Expires = token.Expires
+        });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshDto refresh) {
+        var refreshToken = this.TokenService.ReadToken(refresh.Token);
+        if (!TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
+            return BadRequest(ResponseUtil.CreateProblemDetails("Expected refresh token."));
+        }
+
+        var user = await TokenUtil.FindTokenUser(refreshToken, this.UserManager);
+        if (user == null) {
+            return NotFound(ResponseUtil.CreateProblemDetails("Token user not found"));
+        }
+
+        var roles = await this.UserManager.GetRolesAsync(user);
+        var token = this.TokenService.CreateToken(TokenType.Access, user.Id);
+        return Ok(new AccessTokenDto {
+            Token = token.Token,
+            Expires = token.Expires,
+            Roles = roles.ToArray()
         });
     }
 

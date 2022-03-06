@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using UserAuthServer.Constants;
 using UserAuthServer.Initialization;
 using UserAuthServer.Interfaces;
 using UserAuthServer.Models;
@@ -37,14 +38,12 @@ builder.Services.Configure<IdentityOptions>(options => {
 
     // Email
     options.User.RequireUniqueEmail = true;
-
-    // Sign in
-    options.SignIn.RequireConfirmedEmail = true;
+    // Confirmed email is required in login route!
 
     // User role claim options
-    options.ClaimsIdentity.UserIdClaimType = UserClaim.UserId;
-    options.ClaimsIdentity.UserNameClaimType = UserClaim.Username;
-    options.ClaimsIdentity.RoleClaimType = UserClaim.Role;
+    options.ClaimsIdentity.UserIdClaimType = TokenClaim.UserId;
+    options.ClaimsIdentity.UserNameClaimType = TokenClaim.Username;
+    options.ClaimsIdentity.RoleClaimType = TokenClaim.Role;
 });
 
 // Add user service
@@ -63,12 +62,25 @@ builder.Services
         options.SaveToken = true;
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters() {
-            NameClaimType = UserClaim.Username,
-            RoleClaimType = UserClaim.Role,
+            NameClaimType = TokenClaim.Username,
+            RoleClaimType = TokenClaim.Role,
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateIssuerSigningKey = false,
             IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(builder.Configuration["Jwt:Secret"])
+        };
+        options.Events = new JwtBearerEvents {
+            // Check that the token is access token
+            OnTokenValidated = context => {
+                if (context.Principal != null) {
+                    var typeClaim = context.Principal.Claims.Where(c => c.Type == TokenClaim.Type).FirstOrDefault();
+                    if (typeClaim != null && typeClaim.Value != TokenType.Access.ToString()) {
+                        context.Fail(new Exception("Authorization must be done with access token"));
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 

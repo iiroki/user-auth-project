@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UserAuthServer.Constants;
+using UserAuthServer.Initialization;
 using UserAuthServer.Models;
 using UserAuthServer.Models.Dto;
-using UserAuthServer.Constants;
 using UserAuthServer.Utils;
-using UserAuthServer.Initialization;
 
 namespace UserAuthServer.Controllers;
 
@@ -159,7 +159,7 @@ public class UserController : ControllerBase {
         }
 
         this.Logger.LogDebug(nameof(Reset));
-        if (await GetRequestUser() == null) {
+        if (await RequestUtil.GetRequestUser(this.UserManager, this.HttpContext) == null) {
             return Unauthorized();
         }
 
@@ -177,16 +177,12 @@ public class UserController : ControllerBase {
             return null;
         }
 
-        var httpUser = await GetRequestUser();
+        var httpUser = await RequestUtil.GetRequestUser(this.UserManager, this.HttpContext);
         if (httpUser == null) {
             return null;
         }
 
         return user.Id.Equals(httpUser.Id) ? user : null;
-    }
-
-    private async Task<User?> GetRequestUser() {
-        return await this.UserManager.GetUserAsync(this.HttpContext.User);
     }
 
     private static UserDto UserToDto(User user) => new UserDto {
