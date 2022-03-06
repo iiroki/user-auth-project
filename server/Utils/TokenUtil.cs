@@ -16,8 +16,13 @@ public class TokenUtil {
         return HasTokenTypeClaim(token.Claims, type);
     }
 
-    public static async Task<User?> FindTokenUser(JwtSecurityToken token, UserManager<User> userManager) {
-        var userIdClaim = token.Claims.Where(c => c.Type == TokenClaim.UserId).FirstOrDefault();
+    public static async Task<User?> FindClaimUser(IEnumerable<Claim> claims, UserManager<User> userManager) {
+        var userIdClaim = claims.Where(c => c.Type == TokenClaim.UserId).FirstOrDefault();
         return userIdClaim != null ? await userManager.FindByIdAsync(userIdClaim.Value) : null;
+
+    }
+
+    public static async Task<User?> FindTokenUser(JwtSecurityToken token, UserManager<User> userManager) {
+        return await FindClaimUser(token.Claims, userManager);
     }
 }

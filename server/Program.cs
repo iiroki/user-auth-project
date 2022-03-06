@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +10,16 @@ using Swashbuckle.AspNetCore.Filters;
 using UserAuthServer.Constants;
 using UserAuthServer.Initialization;
 using UserAuthServer.Interfaces;
+using UserAuthServer.Middleware;
 using UserAuthServer.Models;
 using UserAuthServer.Services;
 using UserAuthServer.Utils;
+
+// Logger
+ILogger logger = LoggerFactory.Create(builder => builder
+    .SetMinimumLevel(LogLevel.Debug)
+    .AddConsole())
+    .CreateLogger<Program>();
 
 // Helper function for database location
 string GetDbPath(string dbName) =>
@@ -74,6 +82,7 @@ builder.Services
             OnTokenValidated = context => {
                 if (context.Principal != null
                         && !TokenUtil.HasTokenTypeClaim(context.Principal.Claims, TokenType.Access)) {
+                    logger.LogDebug("Authorization without access token");
                     context.Fail(new Exception("Authorization must be done with access token"));
                 }
 
@@ -83,8 +92,9 @@ builder.Services
     });
 
 // Add custom JWT service and email service
-builder.Services.AddScoped<ITokenService, JwtService>();
-builder.Services.AddScoped<IEmailConfirmService, EmailConfirmationSender>();
+builder.Services.AddSingleton<ITokenService, JwtService>();
+builder.Services.AddSingleton<IEmailConfirmService, EmailConfirmationSender>();
+builder.Services.AddScoped<UserRoleMiddleware, UserRoleMiddleware>();
 
 // Configure controllers to use JSON
 builder.Services.Configure<MvcOptions>(options => {
@@ -137,6 +147,7 @@ app.UseReDoc(options => {
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseMiddleware<UserRoleMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 
