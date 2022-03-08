@@ -1,11 +1,25 @@
 # User Auth Project
 **COMP.SEC.300 Secure Programming: Project**
 
+- **Server:** C# & ASP.NET Core
+- **Client:** TypeScript & React (?)
+
+## Project
+Main goal of this project is to implement the listed features using secure programming principles.
+
 Features:
-- TODO: User creation with email confirmation
-- TODO: User information management
-- TODO: Login with multi-factor authentication
-- TODO: Active login management
+- User authentication using JWT
+- User role based authorization
+- User information management
+- User role management
+
+Secure implementations are reviewed in [Security aspects](#security-aspects) chapter.
+
+## Server API
+TODO
+
+### Client
+TODO
 
 ## Local development
 
@@ -26,8 +40,5 @@ Start the server:
 $ dotnet run
 ```
 
-### Client
-TODO
-
-## Server API
+## Security aspects
 TODO
