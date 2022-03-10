@@ -8,17 +8,31 @@
 Main goal of this project is to implement the listed features using secure programming principles.
 
 Features:
-- User authentication using JWT
+- User authentication
 - User role based authorization
 - User information management
 - User role management
+- User file uploads
 
 Secure implementations are reviewed in [Security aspects](#security-aspects) chapter.
 
 ## Server API
 TODO
 
-### Client
+## Security aspects
+### User authentication
+TODO: JWT...
+
+### User role based authorization
+TODO
+
+### User information management
+TOOD
+
+### User role management
+TODO
+
+### User file uploads
 TODO
 
 ## Local development
@@ -40,5 +54,5 @@ Start the server:
 $ dotnet run
 ```
 
-## Security aspects
+### Client
 TODO
