@@ -13,6 +13,7 @@ namespace UserAuthServer.Controllers;
 
 [ApiController]
 [Route("auth")]
+[AllowAnonymous]
 public class AuthController : ControllerBase {
     private readonly ILogger<AuthController> Logger;
     private readonly UserManager<User> UserManager;
@@ -66,7 +67,7 @@ public class AuthController : ControllerBase {
     public async Task<IActionResult> Refresh(RefreshDto refresh) {
         var refreshToken = this.TokenService.ReadToken(refresh.Token);
         if (refreshToken == null || !TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
-            return BadRequest(ResponseUtil.CreateProblemDetails("Expected refresh token."));
+            return BadRequest(ResponseUtil.CreateProblemDetails("Expected refresh token"));
         }
 
         var user = await TokenUtil.FindTokenUser(refreshToken, this.UserManager);
@@ -86,17 +87,17 @@ public class AuthController : ControllerBase {
     [HttpPost("email-send-confirmation")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> SendConfirmationEmail(EmailDto email) {
-        this.Logger.LogDebug($"{nameof(SendConfirmationEmail)} | Email: {email.Email}");
         var user = await this.UserManager.FindByEmailAsync(email.Email);
-        if (user != null) {
+        this.Logger.LogDebug($"{nameof(SendConfirmationEmail)} | Email: {email.Email}, Found: {user != null}");
+        if (user != null && !user.EmailConfirmed) {
             var token = await this.UserManager.GenerateEmailConfirmationTokenAsync(user);
-            await this.EmailConfirmService.SendConfirmationEmail(user, token);
+            await this.EmailConfirmService.SendConfirmationEmail("auth/email-confirm", user, token);
         }
 
         return NoContent();
     }
 
-    [HttpPost("email-confirm")]
+    [HttpGet("email-confirm")]
     public async Task<IActionResult> ConfirmEmail(
             [FromQuery(Name = "userId")] string userId,
             [FromQuery(Name = "token")] string token) {
@@ -105,6 +106,8 @@ public class AuthController : ControllerBase {
         var user = await this.UserManager.FindByIdAsync(userId);
         if (user == null) {
             return NotFound();
+        } else if (user.EmailConfirmed) {
+            return BadRequest("Email already confirmed");
         }
 
         var result = await this.UserManager.ConfirmEmailAsync(user, encodedToken);

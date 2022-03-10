@@ -12,6 +12,7 @@ namespace UserAuthServer.Controllers;
 
 [ApiController]
 [Route("user")]
+[Authorize(Roles = UserRole.User)]
 public class UserController : ControllerBase {
     private readonly ILogger<UserController> Logger;
     private readonly UserManager<User> UserManager;
@@ -65,6 +66,7 @@ public class UserController : ControllerBase {
     ///     Username and email must be unique.
     /// </remarks>
     [HttpPost]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> CreateUser(UserCreateDto registration) {
@@ -97,7 +99,6 @@ public class UserController : ControllerBase {
     ///     Password is changed if a new password is provided and the current password is correct.
     /// </remarks>
     [HttpPatch("{id}")]
-    [Authorize(Roles = UserRole.User)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -129,7 +130,6 @@ public class UserController : ControllerBase {
     ///     Delete existing user
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize(Roles = UserRole.User)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
