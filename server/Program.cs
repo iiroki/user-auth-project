@@ -91,10 +91,11 @@ builder.Services
         };
     });
 
-// Add custom JWT service and email service
-builder.Services.AddSingleton<ITokenService, JwtService>();
-builder.Services.AddSingleton<IEmailConfirmService, EmailConfirmationSender>();
-builder.Services.AddScoped<UserRoleMiddleware, UserRoleMiddleware>();
+// Add custom services
+builder.Services.AddSingleton<ITokenService, JwtService>(); // JWT for authentication/authorization
+builder.Services.AddSingleton<IEmailConfirmService, EmailConfirmationSender>(); // Email service
+builder.Services.AddSingleton<IPasswordHasher<User>, BCryptPasswordHasher<User>>(); // Use bcrypt password hashing
+builder.Services.AddScoped<UserRoleMiddleware, UserRoleMiddleware>(); // User role middleware for authorization
 
 // Configure controllers to use JSON
 builder.Services.Configure<MvcOptions>(options => {
