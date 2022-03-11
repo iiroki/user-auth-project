@@ -13,5 +13,6 @@ public class UserUpdateDto : UserDeleteDto {
     // Current password is in UserDeleteDto
 
     // Do not update password if null
+    [StringLength(64, MinimumLength = 8, ErrorMessage = "Password must be 8-64 characters")]
     public string? NewPassword { get; set; } = null;
 }

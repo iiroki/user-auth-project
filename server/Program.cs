@@ -37,7 +37,7 @@ builder.Services.AddDbContext<UserAuthServerDbContext>(options => {
 // Configure user options
 builder.Services.Configure<IdentityOptions>(options => {
     // Password options
-    options.Password.RequiredLength = 4;
+    options.Password.RequiredLength = 8;
     options.Password.RequiredUniqueChars = 0;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
@@ -116,7 +116,7 @@ builder.Services.AddSwaggerGen(options => {
 
     var authName = "Bearer token";
     options.AddSecurityDefinition(authName, new OpenApiSecurityScheme {
-        Description = "JWT based authorization.",
+        Description = "JWT based authorization with access token.",
         Name = "Authorization", // Header
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,

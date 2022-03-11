@@ -8,6 +8,7 @@
 Main goal of this project is to implement the listed features using secure programming principles.
 
 Features:
+- User creation
 - User authentication
 - User role based authorization
 - User information management
@@ -20,6 +21,13 @@ Secure implementations are reviewed in [Security aspects](#security-aspects) cha
 TODO
 
 ## Security aspects
+### User creation
+References:
+- [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+- [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+
+TODO: Password length, hashing...
+
 ### User authentication
 TODO: JWT, refresh tokens, access tokens, email confirmation (+ 2FA?)...
 

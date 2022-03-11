@@ -151,6 +151,12 @@ public class UserController : ControllerBase {
         return NoContent();
     }
 
+    /// <summary>
+    ///     Reset users (DEVELOPMENT ONLY)
+    /// </summary>
+    /// <remarks>
+    ///     Clears user database and seeds new power user.
+    /// </remarks>
     [HttpPost("reset")]
     [Authorize(Roles = UserRole.Admin)]
     public async Task<IActionResult> Reset() {

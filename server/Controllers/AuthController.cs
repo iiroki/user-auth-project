@@ -38,7 +38,7 @@ public class AuthController : ControllerBase {
     ///     Log in
     /// </summary>
     /// <remarks>
-    ///     Produces a JWT that can be used to authenticate an user.
+    ///     Produces a refresh token that can be used to gain access token.
     /// </remarks>
     [HttpPost("login")]
     [ProducesResponseType(typeof(RefreshTokenDto), StatusCodes.Status200OK)]
@@ -63,7 +63,16 @@ public class AuthController : ControllerBase {
         });
     }
 
+    /// <summary>
+    ///     Refresh
+    /// </summary>
+    /// <remarks>
+    ///     Produces an access token based on the refresh token.
+    /// </remarks>
     [HttpPost("refresh")]
+    [ProducesResponseType(typeof(AccessTokenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Refresh(RefreshDto refresh) {
         var refreshToken = this.TokenService.ReadToken(refresh.Token);
         if (refreshToken == null || !TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
@@ -84,6 +93,12 @@ public class AuthController : ControllerBase {
         });
     }
 
+    /// <summary>
+    ///     Send email confirmation
+    /// </summary>
+    /// <remarks>
+    ///     Sends an email confirmation message to the user's email if the user is found and the email is not already confirmed.
+    /// </remarks>
     [HttpPost("email-send-confirmation")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> SendConfirmationEmail(EmailDto email) {
@@ -97,7 +112,16 @@ public class AuthController : ControllerBase {
         return NoContent();
     }
 
+    /// <summary>
+    ///     Confirm email
+    /// </summary>
+    /// <remarks>
+    ///     Confirms user's email address if the token matches the user ID.
+    /// </remarks>
     [HttpGet("email-confirm")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ConfirmEmail(
             [FromQuery(Name = "userId")] string userId,
             [FromQuery(Name = "token")] string token) {
@@ -105,7 +129,7 @@ public class AuthController : ControllerBase {
         this.Logger.LogDebug($"{nameof(ConfirmEmail)} | User ID: {userId}, Token: {encodedToken}");
         var user = await this.UserManager.FindByIdAsync(userId);
         if (user == null) {
-            return NotFound();
+            return NotFound("User not found");
         } else if (user.EmailConfirmed) {
             return BadRequest("Email already confirmed");
         }
