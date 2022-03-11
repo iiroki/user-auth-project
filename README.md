@@ -26,7 +26,9 @@ References:
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 
-TODO: Password length, hashing...
+TODO: Password length
+
+ASP.NET Core `UserManager` uses PBKDF2 password hashing algorithm by default. OWASP suggests that [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) would be a better alternative, so I ended up changing `UserManager`'s password hashing algorithm to bcrypt by implementing [`BCryptPasswordHasher`](./server/Services/BCryptPasswordHasher.cs). OWASP also states that the bcrypt work factor should be at least 10, so the password hasher uses 16.
 
 ### User authentication
 TODO: JWT, refresh tokens, access tokens, email confirmation (+ 2FA?)...
