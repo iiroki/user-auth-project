@@ -1,5 +1,6 @@
 public class TokenClaim {
     private const string ClaimPrefix = "Claim_";
+
     private const string UserIdKey = "UserId";
     private const string UsernameKey = "Username";
     private const string RoleKey = "UserRole";
