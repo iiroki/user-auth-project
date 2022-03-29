@@ -38,11 +38,10 @@ builder.Services.AddDbContext<UserAuthServerDbContext>(options => {
 builder.Services.Configure<IdentityOptions>(options => {
     // Password options
     options.Password.RequiredLength = 8;
-    options.Password.RequiredUniqueChars = 0;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireDigit = false;
-    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireNonAlphanumeric = true;
 
     // Email
     options.User.RequireUniqueEmail = true;

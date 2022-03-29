@@ -2,25 +2,27 @@
 **COMP.SEC.300 Secure Programming: Project**
 
 - **Server:** C# & ASP.NET Core
-- **Client:** TypeScript & React (?)
+- **Client:** TypeScript & React (only a simple client to test the server)
 
 ## Project
-Main goal of this project is to implement the listed features using secure programming principles.
-
-Features:
-- User creation
+Main goal of this project is to implement the following features using secure programming principles:
+- User management
 - User authentication
 - Role-based authorization
-- User information management
-- User role management
-- User file uploads
+- File uploads
 
 Secure implementations are reviewed in [Security aspects](#security-aspects) chapter.
 
 ## Server API
-TODO
+TODO: REST API
 
 ## Security aspects
+### .NET
+References:
+- [OWASP DotNet Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/DotNet_Security_Cheat_Sheet.html)
+
+OWASP states that .NET Entity Framework is very effective against SQL injections. Secure password policy is also set to ASP.NET Core Identity options in `Program.cs`.
+
 ### User authentication
 References:
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
@@ -36,19 +38,19 @@ TODO: Email confirmation...
 References:
 - [OWASP Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
 
-An user can have multiple roles that are required to access certain API endpoints. Even though roles are returned to a client with the access token, they are completely for display purposes (e.g. show admin options if the user is admin). Role authorization is always done on the server-side. Roles are always fetched from the database on every request to ensure that role changes apply instantly. An access token only contains user identifier that `UserRoleMiddleware` uses to fetch roles from the database and add then to the request context. API endpoint authorization is done only after roles have been added to the request context.
+An user can have multiple roles that are required to access certain API endpoints. Even though roles are returned to a client with the access token, they are completely for display purposes (e.g. show admin options if the user is admin). Role authorization is always done on the server-side. Roles are always fetched from the database on every request to ensure that role changes apply instantly. An access token only contains user ID that `UserRoleMiddleware` uses to fetch roles from the database and add then to the request context. API endpoint authorization is done only after roles have been added to the request context.
 
 Users always have the least amount of roles required to complete their tasks (OWASP: Enforce Least Privileges). This means that if an user has to only complete ordinary user tasks then `UserRole.User` role will be the only role assigned to the user.
 
 API endpoints that require authorization perform role authorization checks by default for every method. For example, `UserController` uses `[Authorize(Roles = UserRole.User)]` annotation to perform role check for every possible method. This means that you have to specifically state the methods that do not require authorization with `[AllowAnonymous]` annotation (OWASP: Deny by Default).
 
 ### User information management
-TODO: Can only edit own information...
+Users can only update their own information, which means that updating/deleting other's information is prevented. This is done by checking that the requested user ID matches the ID in the provided access token.
 
 ### User role management
 TODO: Admins can change user roles...
 
-### User file uploads
+### File uploads
 TODO: Upload files using secure principles (e.g. generate random file names)...
 
 ## Local development
