@@ -19,11 +19,12 @@ public class JwtService : ITokenService {
             IConfiguration config) {
         this.Logger = logger;
         this.JwtSecret = config["Jwt:Secret"];
+        // TODO Fetch these from the config!
         this.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(this.JwtSecret),
-            ValidateAudience = false,
-            ValidateIssuer = false
+            ValidateIssuer = false,
+            ValidateAudience = false
         };
     }
 

@@ -75,7 +75,11 @@ public class AuthController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Refresh(RefreshDto refresh) {
         var refreshToken = this.TokenService.ReadToken(refresh.Token);
-        if (refreshToken == null || !TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
+        if (refreshToken == null) {
+            return Unauthorized(ResponseUtil.CreateProblemDetails("Invalid token"));
+        }
+
+        if (!TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
             return BadRequest(ResponseUtil.CreateProblemDetails("Expected refresh token"));
         }
 

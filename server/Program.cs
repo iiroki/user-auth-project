@@ -71,9 +71,9 @@ builder.Services
         options.TokenValidationParameters = new TokenValidationParameters() {
             NameClaimType = TokenClaim.Username,
             RoleClaimType = TokenClaim.Role,
-            ValidateIssuer = false,
             ValidateAudience = false,
-            ValidateIssuerSigningKey = false,
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = true,
             IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(builder.Configuration["Jwt:Secret"])
         };
         options.Events = new JwtBearerEvents {
