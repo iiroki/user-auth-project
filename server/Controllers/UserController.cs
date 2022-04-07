@@ -37,9 +37,9 @@ public class UserController : ControllerBase {
     ///     Get all users
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers() {
-        this.Logger.LogDebug($"{nameof(GetUsers)}");
         return await this.UserManager.Users.Select(u => UserToDto(u)).ToListAsync();
     }
 
@@ -47,11 +47,11 @@ public class UserController : ControllerBase {
     ///     Get specific user
     /// </summary>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDto>> GetUser(string id) {
         var user = await this.UserManager.FindByIdAsync(id);
-        this.Logger.LogDebug($"{nameof(GetUser)} | ID: {id} - Found: {user != null}");
         if (user == null) {
             return NotFound();
         }
@@ -70,7 +70,6 @@ public class UserController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> CreateUser(UserCreateDto registration) {
-        this.Logger.LogDebug(nameof(CreateUser));
         var existingUser = await this.UserManager.FindByNameAsync(registration.Username);
         if (existingUser != null) {
             return BadRequest(ResponseUtil.CreateProblemDetails("User already exists"));
@@ -127,6 +126,43 @@ public class UserController : ControllerBase {
     }
 
     /// <summary>
+    ///     Update roles of existing user
+    /// </summary>
+    [HttpPatch("{id}/role")]
+    [Authorize(Roles = UserRole.Admin)]
+    public async Task<IActionResult> UpdateUserRoles(string id, RoleUpdateDto roleUpdate) {
+        var user = await FindUserById(id);
+        if (user == null) {
+            return NotFound();
+        }
+
+        // Validate roles
+        var newRoles = roleUpdate.Roles;
+        var existingRoles = UserRole.GetAll();
+        foreach (var role in newRoles) {
+            if (!existingRoles.Contains(role)) {
+                return BadRequest(ResponseUtil.CreateProblemDetails($"Invalid role: {role}"));
+            }
+        }
+
+        // Update roles
+        foreach (var existingRole in existingRoles) {
+            if (!newRoles.Contains(existingRole) && await this.UserManager.IsInRoleAsync(user, existingRole)) {
+                await this.UserManager.RemoveFromRoleAsync(user, existingRole);
+            }
+        }
+
+        foreach (var newRole in newRoles) {
+            if (!await this.UserManager.IsInRoleAsync(user, newRole)) {
+                await this.UserManager.AddToRoleAsync(user, newRole);
+            }
+        }
+
+        this.Logger.LogDebug($"{nameof(UpdateUserRoles)} | User ID: {id}, New roles: {String.Join(", ", newRoles)}");
+        return NoContent();
+    }
+
+    /// <summary>
     ///     Delete existing user
     /// </summary>
     [HttpDelete("{id}")]
@@ -134,7 +170,6 @@ public class UserController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteUser(string id, UserDeleteDto userDelete) {
-        this.Logger.LogDebug(nameof(DeleteUser));
         var user = await FindUserByIdIfTokenMatches(id);
         if (user == null) {
             return Forbid();
@@ -159,6 +194,10 @@ public class UserController : ControllerBase {
     /// </remarks>
     [HttpPost("reset")]
     [Authorize(Roles = UserRole.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Reset() {
         if (!this.DevelopmentEnv) {
             return NotFound();
@@ -177,8 +216,12 @@ public class UserController : ControllerBase {
         return NoContent();
     }
 
+    private async Task<User?> FindUserById(string id) {
+        return await this.UserManager.FindByIdAsync(id);
+    }
+
     private async Task<User?> FindUserByIdIfTokenMatches(string id) {
-        var user = await this.UserManager.FindByIdAsync(id);
+        var user = await FindUserById(id);
         if (user == null) {
             return null;
         }
@@ -193,7 +236,6 @@ public class UserController : ControllerBase {
 
     private static UserDto UserToDto(User user) => new UserDto {
         Id = user.Id,
-        Name = user.Name,
-        Email = user.Email
+        Name = user.Name
     };
 }

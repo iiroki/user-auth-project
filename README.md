@@ -11,7 +11,7 @@ Main goal of this project is to implement the following features using secure pr
 - Role-based authorization
 - File uploads
 
-Secure implementations are reviewed in [Security aspects](#security-aspects) chapter.
+Secure implementations are reviewed in [Security aspects](#security-aspects) section.
 
 ## Server API
 TODO: REST API
@@ -32,7 +32,7 @@ OWASP states that passwords shorter than 8 characters are considered weak, so it
 
 This project used JWTs (JSON Web Tokens) for user authentication. Successful login grants the user a refresh token (expires in 3 h) that can then be used to get an access token (expires in 5 min) that can be used to access the API. Refresh tokens can't be used to access API resources.
 
-TODO: Email confirmation...
+An user has to provide an email when creating the user account. The user has to confirm their email in order to login in. The email will also be used to change forgotten password.
 
 ### Role-based authorization
 References:
