@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserAuthServer.Constants;
+using UserAuthServer.Interfaces;
 using UserAuthServer.Models;
 using UserAuthServer.Models.Dto;
-using UserAuthServer.Interfaces;
 
 namespace UserAuthServer.Controllers;
 
