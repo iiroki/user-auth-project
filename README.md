@@ -51,7 +51,14 @@ Only users with admin role/privileges can change roles of another user.
 Users can only update their own information, which means that updating/deleting other's information is prevented. This is done by checking that the requested user ID matches the ID in the provided access token.
 
 ### File uploads
-TODO: Upload files using secure principles (e.g. generate random file names)...
+References:
+- [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
+
+Users can use the API to upload files. Allowed file extensions are defined in `appsettings.json` and files without an allowed extension are not accepted (OWASP: List allowed extensions).
+
+File name validation can also be completely ignores since all file names are replaced with random strings/IDs (OWASP: Filename Sanitization).
+
+Upload file size is also limited to 5 MB.
 
 ## Local development
 
