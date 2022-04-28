@@ -45,11 +45,10 @@ Users always have the least amount of roles required to complete their tasks (OW
 
 API endpoints that require authorization perform role authorization checks by default for every method. For example, `UserController` uses `[Authorize(Roles = UserRole.User)]` annotation to perform role check for every possible method. This means that you have to specifically state the methods that do not require authorization with `[AllowAnonymous]` annotation (OWASP: Deny by Default).
 
+Only users with admin role/privileges can change roles of another user.
+
 ### User information management
 Users can only update their own information, which means that updating/deleting other's information is prevented. This is done by checking that the requested user ID matches the ID in the provided access token.
-
-### User role management
-TODO: Admins can change user roles...
 
 ### File uploads
 TODO: Upload files using secure principles (e.g. generate random file names)...

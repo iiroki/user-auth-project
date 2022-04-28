@@ -50,6 +50,7 @@ public class AuthController : ControllerBase {
             return Unauthorized(ResponseUtil.CreateProblemDetails("Invalid login credentials"));
         }
 
+        // [SECURE] Require confirmed email
         if (!user.EmailConfirmed) {
             return UnprocessableEntity(ResponseUtil.CreateProblemDetails("Email not confirmed"));
         }

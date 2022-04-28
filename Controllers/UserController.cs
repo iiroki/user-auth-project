@@ -129,7 +129,7 @@ public class UserController : ControllerBase {
     ///     Update roles of existing user
     /// </summary>
     [HttpPatch("{id}/role")]
-    [Authorize(Roles = UserRole.Admin)]
+    [Authorize(Roles = UserRole.Admin)] // [SECURE] Require admin privileges
     public async Task<IActionResult> UpdateUserRoles(string id, RoleUpdateDto roleUpdate) {
         var user = await FindUserById(id);
         if (user == null) {

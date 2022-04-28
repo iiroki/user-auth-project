@@ -19,6 +19,8 @@ public class UserRoleMiddleware : IMiddleware {
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next) {
         var claims = context.User.Claims;
+
+        // [SECURE] Only add role claims when access token is used
         if (TokenUtil.HasTokenTypeClaim(claims, TokenType.Access) && claims.Count() > 0) {
             var user = await TokenUtil.FindClaimUser(claims, this.UserManager);
             if (user != null) {

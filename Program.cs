@@ -1,6 +1,5 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +44,7 @@ builder.Services.Configure<IdentityOptions>(options => {
 
     // [SECURE] Email
     options.User.RequireUniqueEmail = true;
-    // Confirmed email is required in login route!
+    // [SECURE] Confirmed email is required in login route!
 
     // User role claim options
     options.ClaimsIdentity.UserIdClaimType = TokenClaim.UserId;

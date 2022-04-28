@@ -11,17 +11,19 @@ namespace UserAuthServer.Services;
 public class JwtService : ITokenService {
     private readonly ILogger<JwtService> Logger;
     private readonly JwtSecurityTokenHandler TokenHandler = new JwtSecurityTokenHandler();
-    private readonly TokenValidationParameters TokenValidationParameters;
+    private readonly TokenValidationParameters TokenOptions;
 
     public JwtService(
             ILogger<JwtService> logger,
             IOptions<TokenValidationParameters> tokenOptions) {
         this.Logger = logger;
-        this.TokenValidationParameters = tokenOptions.Value;
+        this.TokenOptions = tokenOptions.Value;
     }
 
     public AuthenticationToken CreateToken(TokenType type, string userId) {
-        var authSignKey = this.TokenValidationParameters.IssuerSigningKey;
+        var authSignKey = this.TokenOptions.IssuerSigningKey;
+
+        // [SECURE] Only add user ID and type claims
         var claims = new List<Claim> {
             new Claim(TokenClaim.Type, type.ToString()),
             new Claim(TokenClaim.UserId, userId)
@@ -44,7 +46,7 @@ public class JwtService : ITokenService {
 
     public JwtSecurityToken? ReadToken(string token) {
         try {
-            this.TokenHandler.ValidateToken(token, this.TokenValidationParameters, out var validToken);
+            this.TokenHandler.ValidateToken(token, this.TokenOptions, out var validToken);
             return validToken as JwtSecurityToken;
         } catch {
             return null;

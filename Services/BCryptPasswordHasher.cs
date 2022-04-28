@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace UserAuthServer.Services;
 
 public class BCryptPasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class {
-    private static readonly int WORK_FACTOR = 12;
+    private static readonly int WORK_FACTOR = 12; // [SECURE] OWASP: Minimum work factor = 10
     private readonly ILogger<BCryptPasswordHasher<TUser>> Logger;
 
     public BCryptPasswordHasher(ILogger<BCryptPasswordHasher<TUser>> logger){
@@ -14,7 +14,8 @@ public class BCryptPasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : 
     public string HashPassword(TUser user, string password) {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        // Let BCrypt generate salt
+
+        // [SECURE] Let BCrypt generate salt
         var hash = BCrypt.Net.BCrypt.HashPassword(password, WORK_FACTOR);
         this.Logger.LogDebug($"{nameof(HashPassword)} | Took: {stopwatch.ElapsedMilliseconds} ms");
         return hash;
