@@ -10,6 +10,8 @@ Main goal of this project is to implement the following features using secure pr
 - Role-based authorization
 - File uploads
 
+Lines of code that are meant to increase security are marked with code comments starting with `// [SECURE] ...`.
+
 Secure implementations are reviewed in [Security aspects](#security-aspects) section.
 
 ## API

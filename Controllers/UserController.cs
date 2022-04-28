@@ -12,7 +12,7 @@ namespace UserAuthServer.Controllers;
 
 [ApiController]
 [Route("user")]
-[Authorize(Roles = UserRole.User)]
+[Authorize(Roles = UserRole.User)] // [SECURE] Deny by default
 public class UserController : ControllerBase {
     private readonly ILogger<UserController> Logger;
     private readonly UserManager<User> UserManager;

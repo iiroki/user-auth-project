@@ -36,14 +36,14 @@ builder.Services.AddDbContext<UserAuthServerDbContext>(options => {
 
 // Configure user options
 builder.Services.Configure<IdentityOptions>(options => {
-    // Password options
+    // [SECURE] Set strong password requirements
     options.Password.RequiredLength = 8;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
     options.Password.RequireDigit = true;
     options.Password.RequireNonAlphanumeric = true;
 
-    // Email
+    // [SECURE] Email
     options.User.RequireUniqueEmail = true;
     // Confirmed email is required in login route!
 
@@ -58,6 +58,24 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<UserAuthServerDbContext>()
     .AddDefaultTokenProviders();
 
+// Set token validation options
+var tokenOptions = new TokenValidationParameters {
+    IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(builder.Configuration["Jwt:Secret"]),
+    ValidateIssuerSigningKey = true,
+    ValidateAudience = false,
+    ValidateIssuer = false,
+    NameClaimType = TokenClaim.Username
+    // [SECURE] User role claim is not defined here
+};
+
+builder.Services.Configure<TokenValidationParameters>(options => {
+    options.IssuerSigningKey = tokenOptions.IssuerSigningKey;
+    options.ValidateIssuerSigningKey = tokenOptions.ValidateIssuerSigningKey;
+    options.ValidateAudience = tokenOptions.ValidateAudience;
+    options.ValidateIssuer = tokenOptions.ValidateIssuer;
+    options.NameClaimType = tokenOptions.NameClaimType;
+});
+
 // Add JWT authentication
 builder.Services
     .AddAuthentication(options => {
@@ -68,16 +86,9 @@ builder.Services
     .AddJwtBearer(options => {
         options.SaveToken = true;
         options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters = new TokenValidationParameters() {
-            NameClaimType = TokenClaim.Username,
-            RoleClaimType = TokenClaim.Role,
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(builder.Configuration["Jwt:Secret"])
-        };
+        options.TokenValidationParameters = tokenOptions;
         options.Events = new JwtBearerEvents {
-            // Check that the token is access token
+            // [SECURE] Set access token check
             OnTokenValidated = context => {
                 if (context.Principal != null
                         && !TokenUtil.HasTokenTypeClaim(context.Principal.Claims, TokenType.Access)) {
@@ -93,8 +104,12 @@ builder.Services
 // Add custom services
 builder.Services.AddSingleton<ITokenService, JwtService>(); // JWT for authentication/authorization
 builder.Services.AddSingleton<IEmailConfirmService, EmailConfirmationSender>(); // Email service
-builder.Services.AddSingleton<IPasswordHasher<User>, BCryptPasswordHasher<User>>(); // Use bcrypt password hashing
-builder.Services.AddScoped<UserRoleMiddleware, UserRoleMiddleware>(); // User role middleware for authorization
+
+// [SECURE] Use bcrypt password hashing algorithm
+builder.Services.AddSingleton<IPasswordHasher<User>, BCryptPasswordHasher<User>>();
+
+// [SECURE] User role middleware for authorization -> Check user roles server-side
+builder.Services.AddScoped<UserRoleMiddleware, UserRoleMiddleware>();
 
 // Configure controllers to use JSON
 builder.Services.Configure<MvcOptions>(options => {
@@ -145,9 +160,10 @@ app.UseReDoc(options => {
     options.ConfigObject.ExpandResponses = "200,201";
 });
 
+// Build request pipeline
 app.UseHttpsRedirection();
 app.UseAuthentication();
-app.UseMiddleware<UserRoleMiddleware>();
+app.UseMiddleware<UserRoleMiddleware>(); // User role fetching happens right after authentication
 app.UseAuthorization();
 app.MapControllers();
 

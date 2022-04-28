@@ -1,35 +1,27 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using UserAuthServer.Constants;
 using UserAuthServer.Interfaces;
 using UserAuthServer.Models;
-using UserAuthServer.Utils;
 
 namespace UserAuthServer.Services;
 
 public class JwtService : ITokenService {
     private readonly ILogger<JwtService> Logger;
-    private readonly string JwtSecret;
     private readonly JwtSecurityTokenHandler TokenHandler = new JwtSecurityTokenHandler();
     private readonly TokenValidationParameters TokenValidationParameters;
 
     public JwtService(
             ILogger<JwtService> logger,
-            IConfiguration config) {
+            IOptions<TokenValidationParameters> tokenOptions) {
         this.Logger = logger;
-        this.JwtSecret = config["Jwt:Secret"];
-        // TODO Fetch these from the config!
-        this.TokenValidationParameters = new TokenValidationParameters {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(this.JwtSecret),
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
+        this.TokenValidationParameters = tokenOptions.Value;
     }
 
     public AuthenticationToken CreateToken(TokenType type, string userId) {
-        var authSignKey = AuthSignKeyFactory.CreateAuthSignKey(this.JwtSecret);
+        var authSignKey = this.TokenValidationParameters.IssuerSigningKey;
         var claims = new List<Claim> {
             new Claim(TokenClaim.Type, type.ToString()),
             new Claim(TokenClaim.UserId, userId)
