@@ -1,8 +1,7 @@
 # User Auth Project
 **COMP.SEC.300 Secure Programming: Project**
 
-- **Server:** C# & ASP.NET Core
-- **Client:** TypeScript & React (only a simple client to test the server)
+**Tech stack:** C#, ASP.NET Core & Entity Framework Core
 
 ## Project
 Main goal of this project is to implement the following features using secure programming principles:
@@ -13,7 +12,7 @@ Main goal of this project is to implement the following features using secure pr
 
 Secure implementations are reviewed in [Security aspects](#security-aspects) section.
 
-## Server API
+## API
 TODO: REST API
 
 ## Security aspects
