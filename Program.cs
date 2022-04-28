@@ -103,6 +103,7 @@ builder.Services
 // Add custom services
 builder.Services.AddSingleton<ITokenService, JwtService>(); // JWT for authentication/authorization
 builder.Services.AddSingleton<IEmailConfirmService, EmailConfirmationSender>(); // Email service
+builder.Services.AddSingleton<IUserFileService, UserFileService>();
 
 // [SECURE] Use bcrypt password hashing algorithm
 builder.Services.AddSingleton<IPasswordHasher<User>, BCryptPasswordHasher<User>>();

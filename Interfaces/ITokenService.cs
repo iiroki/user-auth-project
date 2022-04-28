@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using UserAuthServer.Constants;
 using UserAuthServer.Models;
 
