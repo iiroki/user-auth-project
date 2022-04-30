@@ -53,6 +53,7 @@ public class JwtService : ITokenService {
         }
     }
 
+    // [SECURE] Refresh and access tokens have different expiration time
     private DateTime CreateExpireDateTime(TokenType type) {
         switch (type) {
             case TokenType.Refresh:

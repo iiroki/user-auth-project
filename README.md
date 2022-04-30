@@ -29,11 +29,13 @@ References:
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 
-OWASP states that passwords shorter than 8 characters are considered weak, so it is the minimum password length requirement when creating/updating an user. ASP.NET Core `UserManager` uses PBKDF2 password hashing algorithm by default. OWASP suggests that [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) would be a better alternative, so I ended up changing `UserManager`'s password hashing algorithm to bcrypt by implementing `BCryptPasswordHasher`. OWASP also states that the bcrypt work factor should be at least 10, so the password hasher uses 16.
+OWASP states that passwords shorter than 8 characters are considered weak, so it is the minimum password length requirement when creating/updating an user. Passwords also require both case characters, digit and non-alphanumeric character.
+
+ASP.NET Core `UserManager` uses PBKDF2 password hashing algorithm by default. OWASP suggests that [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) would be a better alternative, so I ended up changing `UserManager`'s password hashing algorithm to bcrypt by implementing `BCryptPasswordHasher`. OWASP also states that the bcrypt work factor should be at least 10, so the password hasher uses 12.
 
 This project used JWTs (JSON Web Tokens) for user authentication. Successful login grants the user a refresh token (expires in 3 h) that can then be used to get an access token (expires in 5 min) that can be used to access the API. Refresh tokens can't be used to access API resources.
 
-An user has to provide an email when creating the user account. The user has to confirm their email in order to login in. The email will also be used to change forgotten password.
+An user has to provide an email when creating the user account. The user has to confirm their email in order to login in. TODO: The email will also be used to change forgotten password.
 
 ### Role-based authorization
 References:
@@ -48,15 +50,15 @@ API endpoints that require authorization perform role authorization checks by de
 Only users with admin role/privileges can change roles of another user.
 
 ### User information management
-Users can only update their own information, which means that updating/deleting other's information is prevented. This is done by checking that the requested user ID matches the ID in the provided access token.
+Users can only update their own information, which means that updating/deleting other's information is prevented. This is done by `UserController` checking that the requested user ID matches the ID in the provided access token.
 
 ### File uploads
 References:
 - [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
 
-Users can use the API to upload files. Allowed file extensions are defined in `appsettings.json` and files without an allowed extension are not accepted (OWASP: List allowed extensions).
+Users can use the API to upload files with `UserFileService`. Allowed file extensions are defined in `appsettings.json` and files without an allowed extension are not accepted (OWASP: List allowed extensions).
 
-File name validation can also be completely ignores since all file names are replaced with random strings/IDs (OWASP: Filename Sanitization).
+File name validation can also be completely ignores since all file names are replaced with random strings/IDs (OWASP: Filename Sanitization), which protects against path traversals.
 
 Upload file size is also limited to 5 MB.
 
@@ -78,6 +80,3 @@ Start the server:
 ```
 $ dotnet run
 ```
-
-### Client
-TODO

@@ -25,7 +25,6 @@ string GetDbPath(string dbName) =>
     System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), dbName);
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddControllers();
 
 // Setup SQLite database
