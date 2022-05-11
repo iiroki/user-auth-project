@@ -77,9 +77,7 @@ public class AuthController : ControllerBase {
         var refreshToken = this.TokenService.ReadToken(refresh.Token);
         if (refreshToken == null) {
             return Unauthorized(ResponseUtil.CreateProblemDetails("Invalid token"));
-        }
-
-        if (!TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
+        } else if (!TokenUtil.IsTokenType(refreshToken, TokenType.Refresh)) {
             return BadRequest(ResponseUtil.CreateProblemDetails("Expected refresh token"));
         }
 
