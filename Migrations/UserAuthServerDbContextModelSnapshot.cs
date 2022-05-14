@@ -145,21 +145,6 @@ namespace UserAuthServer.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthServer.Models.FileInfo", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("FileInfos");
-                });
-
             modelBuilder.Entity("UserAuthServer.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -228,6 +213,29 @@ namespace UserAuthServer.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("UserAuthServer.Models.UserFile", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserFiles");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -279,7 +287,7 @@ namespace UserAuthServer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("UserAuthServer.Models.FileInfo", b =>
+            modelBuilder.Entity("UserAuthServer.Models.UserFile", b =>
                 {
                     b.HasOne("UserAuthServer.Models.User", "User")
                         .WithMany()

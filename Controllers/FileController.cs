@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using UserAuthServer.Constants;
 using UserAuthServer.Interfaces;
 using UserAuthServer.Models;
 using UserAuthServer.Models.Dto;
+using UserAuthServer.Utils;
 
 namespace UserAuthServer.Controllers;
 
@@ -13,16 +14,16 @@ namespace UserAuthServer.Controllers;
 [Authorize(Roles = UserRole.User)] // [SECURE] Deny by default
 public class FileController : ControllerBase {
     private readonly ILogger<FileController> Logger;
-    private readonly DbSet<UserFileInfo> FileContext;
     private readonly IUserFileService UserFileService;
+    private readonly UserManager<User> UserManager;
 
     public FileController(
             ILogger<FileController> logger,
-            UserAuthServerDbContext dbContext,
-            IUserFileService userFileService) {
+            IUserFileService userFileService,
+            UserManager<User> userManager) {
         this.Logger = logger;
-        this.FileContext = dbContext.UserFileInfos;
         this.UserFileService = userFileService;
+        this.UserManager = userManager;
     }
 
     /// <summary>
@@ -32,7 +33,8 @@ public class FileController : ControllerBase {
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<UserFileInfoDto>>> GetFileInfos() {
-        return new List<UserFileInfoDto> { };
+        var files = await this.UserFileService.GetUserFiles();
+        return Ok(files.Select(UserFileToDto));
     }
 
     /// <summary>
@@ -42,7 +44,28 @@ public class FileController : ControllerBase {
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserDto>> GetFile(string id) {
-        return NotFound();
+    public async Task<ActionResult> GetFile(string id) {
+        var file = await this.UserFileService.GetUserFile(id);
+        if (file == null) {
+            return NotFound();
+        }
+        return File(file.Data, file.ContentType);
     }
+
+    /// <summary>
+    ///     Add new file
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> AddFile(IFormFile file) {
+        var user = await RequestUtil.GetRequestUser(this.UserManager, this.HttpContext);
+        var id = await this.UserFileService.AddUserFile(file, user!);
+        return id != null ? Created(id, new { id = id }) : BadRequest();
+    }
+
+    private static UserFileInfoDto UserFileToDto(UserFile file) => new UserFileInfoDto {
+        Id = file.Id,
+        UserId = file.User.Id
+    };
 }

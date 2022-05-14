@@ -1,9 +1,9 @@
+using UserAuthServer.Models;
 namespace UserAuthServer.Interfaces;
 
 public interface IUserFileService {
-    string? GetUserFile(string id);
-
-    string? AddUserFile(IFormFile file);
-
-    bool RemoveUserFile(string id);
+    Task<IEnumerable<UserFile>> GetUserFiles();
+    Task<UserFile?> GetUserFile(string id);
+    Task<string?> AddUserFile(IFormFile file, User user);
+    Task<bool> RemoveUserFile(string id);
 }
