@@ -20,7 +20,7 @@ Main goal of this project is to implement a web server with the following featur
 - Role-based authorization
 - File uploads
 
-These features provide a secure foundation for any application that needs these features.
+**These features provide a secure foundation for any application that needs these features.**
 
 Lines of code that are meant to increase security are marked with code comments starting with `[SECURE]`. Secure implementations are reviewed in [Security aspects](#security-aspects) section.
 
@@ -116,7 +116,7 @@ Test cases were executed and validated using Postman and debugger.
 
 ## Future improvements
 - Email could also be used to recover a forgotten password.
-- JWT audience and issuer could also be validated.
+- JWT secrets could use rotation (during maintenance for example).
 
 ## Local development
 Add the following secrets with .NET Core Secret Manager tool:
