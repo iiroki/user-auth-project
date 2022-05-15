@@ -290,10 +290,15 @@ namespace UserAuthServer.Migrations
             modelBuilder.Entity("UserAuthServer.Models.UserFile", b =>
                 {
                     b.HasOne("UserAuthServer.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Files")
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("UserAuthServer.Models.User", b =>
+                {
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

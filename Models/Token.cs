@@ -1,5 +1,3 @@
-using Microsoft.IdentityModel.Tokens;
-
 namespace UserAuthServer.Models;
 
 public class AuthenticationToken {

@@ -5,12 +5,10 @@ using UserAuthServer.Models;
 namespace UserAuthServer.Services;
 
 public class UserFileService : IUserFileService {
-    private static int MAX_FILE_SIZE = 500000; // Bytes
+    private static int MAX_FILE_SIZE = 5 * 1000 * 1000; // 5 MB
     private readonly ILogger<UserFileService> Logger;
     private readonly UserAuthServerDbContext DbContext;
-    private readonly string Folder;
     private readonly string[] AllowedExtensions;
-    private readonly Func<int> SaveDb;
 
     public UserFileService(
             ILogger<UserFileService> logger,
@@ -18,15 +16,7 @@ public class UserFileService : IUserFileService {
             IConfiguration config) {
         this.Logger = logger;
         this.DbContext = dbContext;
-        this.SaveDb = dbContext.SaveChanges;
-        this.Folder = Path.Combine(Directory.GetCurrentDirectory(), config["UserFile:Folder"]);
         this.AllowedExtensions = config.GetSection("UserFile:AllowedExtensions").Get<string[]>();
-
-        // Init user file folder
-        if (!Directory.Exists(this.Folder)) {
-            this.Logger.LogInformation($"Creating user file folder: {this.Folder}");
-            Directory.CreateDirectory(this.Folder);
-        }
     }
 
     public async Task<IEnumerable<UserFile>> GetUserFiles() {
@@ -45,6 +35,8 @@ public class UserFileService : IUserFileService {
 
         var stream = new MemoryStream();
         await file.CopyToAsync(stream);
+
+        // [SECURE] Generate random file name
         var userFile = new UserFile() {
             Id = Guid.NewGuid().ToString(),
             User = user,
@@ -58,6 +50,12 @@ public class UserFileService : IUserFileService {
     }
 
     public async Task<bool> RemoveUserFile(string id) {
-        return false;
+        var file = await this.DbContext.UserFiles.FindAsync(id);
+        if (file == null) {
+            return false;
+        }
+
+        this.DbContext.UserFiles.Remove(file);
+        return true;
     }
 }

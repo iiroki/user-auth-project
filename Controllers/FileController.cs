@@ -34,7 +34,7 @@ public class FileController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<UserFileInfoDto>>> GetFileInfos() {
         var files = await this.UserFileService.GetUserFiles();
-        return Ok(files.Select(UserFileToDto));
+        return Ok(files.Select(f => UserFileToDto(f)));
     }
 
     /// <summary>
@@ -56,12 +56,33 @@ public class FileController : ControllerBase {
     ///     Add new file
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> AddFile(IFormFile file) {
         var user = await RequestUtil.GetRequestUser(this.UserManager, this.HttpContext);
         var id = await this.UserFileService.AddUserFile(file, user!);
-        return id != null ? Created(id, new { id = id }) : BadRequest();
+        return id != null ? Created(id, new UserFileInfoDto { Id = id, UserId = user!.Id }) : BadRequest();
+    }
+
+    /// <summary>
+    ///     Delete file
+    /// </summary>
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> DeleteFile(string id) {
+        var file = await this.UserFileService.GetUserFile(id);
+        if (file == null) {
+            return NotFound();
+        }
+
+        var user = await RequestUtil.GetRequestUser(this.UserManager, this.HttpContext);
+        if (user == null || user.Id != file.User.Id) {
+            return Forbid();
+        }
+
+        await this.UserFileService.RemoveUserFile(file.Id);
+        return NoContent();
     }
 
     private static UserFileInfoDto UserFileToDto(UserFile file) => new UserFileInfoDto {
