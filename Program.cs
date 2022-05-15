@@ -59,15 +59,20 @@ builder.Services.AddIdentity<User, IdentityRole>()
 // Set token validation options
 var tokenOptions = new TokenValidationParameters {
     IssuerSigningKey = AuthSignKeyFactory.CreateAuthSignKey(builder.Configuration["Jwt:Secret"]),
+    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+    ValidAudience = builder.Configuration["Jwt:Audience"],
     ValidateIssuerSigningKey = true,
-    ValidateAudience = false,
-    ValidateIssuer = false,
+    // [SECURE] Validate issuer and audience
+    ValidateIssuer = true,
+    ValidateAudience = true,
     NameClaimType = TokenClaim.Username
     // [SECURE] User role claim is not defined here
 };
 
 builder.Services.Configure<TokenValidationParameters>(options => {
     options.IssuerSigningKey = tokenOptions.IssuerSigningKey;
+    options.ValidIssuer = tokenOptions.ValidIssuer;
+    options.ValidAudience = tokenOptions.ValidAudience;
     options.ValidateIssuerSigningKey = tokenOptions.ValidateIssuerSigningKey;
     options.ValidateAudience = tokenOptions.ValidateAudience;
     options.ValidateIssuer = tokenOptions.ValidateIssuer;

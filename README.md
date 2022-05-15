@@ -1,21 +1,51 @@
-# User Auth Project
+# User Auth Server
+
 **COMP.SEC.300 Secure Programming: Project**
+
+## Content
+- [Project description](#project-description)
+- [API](#api)
+- [Security aspects](#security-aspects)
+- [Testing](#testing)
+- [Future improvements](#future-improvements)
+- [Local development](#local-development)
+
+## Project description
 
 **Tech stack:** C#, ASP.NET Core & Entity Framework Core
 
-## Project
-Main goal of this project is to implement the following features using secure programming principles:
+Main goal of this project is to implement a web server with the following features using secure programming principles:
 - User management
 - User authentication
 - Role-based authorization
 - File uploads
 
-Lines of code that are meant to increase security are marked with code comments starting with `// [SECURE] ...`.
+These features provide a secure foundation for any application that needs these features.
 
-Secure implementations are reviewed in [Security aspects](#security-aspects) section.
+Lines of code that are meant to increase security are marked with code comments starting with `[SECURE]`. Secure implementations are reviewed in [Security aspects](#security-aspects) section.
 
 ## API
-TODO: REST API
+
+The server has a REST API and provides the following features:
+
+| METHOD | URL | Description | Auth |
+| :-----: | :----- | :----- | :-----: |
+| `GET` | `/api-docs` | Generated ReDoc documentation | - |
+| `GET` | `/user` | Get all users | - |
+| `GET` | `/user/<id>` | Get specific user | - |
+| `POST` | `/user` | Create new user | - |
+| `PATCH` | `/user/<id>` | Update specific user | User |
+| `DELETE` | `/user/<id>` | Delete specific user | User |
+| `PATCH` | `/user/<id>/role` | Update specific user's roles | Admin |
+| `POST` | `/auth/login` | Log in with user credentials (refresh token) | - |
+| `POST` | `/auth/refresh` | Gain an access token from a refresh token | - |
+| `POST` | `/auth/email-send-confirmation` | Send confirmation email | - |
+| `GET` | `/auth/email-confirm` | Confirm user email | - |
+| `GET` | `/file` | Get all file informations | - |
+| `GET` | `/file/<id>` | Get specific file | - |
+| `POST` | `/file/` | Add new file | User |
+| `DELETE` | `/file/<id>` | Delete specific file | User |
+
 
 ## Security aspects
 ### .NET
@@ -33,9 +63,9 @@ OWASP states that passwords shorter than 8 characters are considered weak, so it
 
 ASP.NET Core `UserManager` uses PBKDF2 password hashing algorithm by default. OWASP suggests that [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) would be a better alternative, so I ended up changing `UserManager`'s password hashing algorithm to bcrypt by implementing `BCryptPasswordHasher`. OWASP also states that the bcrypt work factor should be at least 10, so the password hasher uses 12.
 
-This project used JWTs (JSON Web Tokens) for user authentication. Successful login grants the user a refresh token (expires in 3 h) that can then be used to get an access token (expires in 5 min) that can be used to access the API. Refresh tokens can't be used to access API resources.
+This project used JWTs (JSON Web Tokens) for user authentication. Successful login grants the user a refresh token (expires in 3 h) that can then be used to get an access token (expires in 5 min) that can be used to access the API. Refresh tokens can't be used to access API resources. JWT issuer and audience fields are also populated and validated during authentication.
 
-An user has to provide an email when creating the user account. The user has to confirm their email in order to login in. TODO: The email will also be used to change forgotten password.
+An user has to provide an email when creating the user account. The user has to confirm their email in order to login in.
 
 ### Role-based authorization
 References:
@@ -58,13 +88,37 @@ References:
 
 Users can use the API to upload files with `UserFileService`. Allowed file extensions are defined in `appsettings.json` and files without an allowed extension are not accepted (OWASP: List allowed extensions).
 
-File name validation can also be completely ignores since all file names are replaced with random strings/IDs (OWASP: Filename Sanitization), which protects against path traversals.
+File name validation can also be completely ignores since all file names are replaced with random strings/IDs (OWASP: Filename Sanitization), which protects against path traversals. Users can only delete files that they have added themselves (user owns the resource).
 
 Upload file size is also limited to 5 MB.
 
-## Local development
+## Testing
+The server API is tested with the following test cases to ensure security:
 
-### Server
+1. User information can be requested without authorization.
+1. Users can log in with correct credentials.
+1. Login with incorrect credentials fails.
+1. Users must have confirmed email in order to log in.
+1. Users can only update/delete their own information.
+1. Only admins can update user roles.
+1. Refresh tokens expire in 3 hours and access token in 5 minutes.
+1. Refresh token can't be used to access the API.
+1. Access token can't be used to gain another access token.
+1. JWT issuer and audience are also validated.
+1. All endpoints that require authorization can't be accessed without proper roles.
+1. User role changes are imminent (roles are checked from the database on every request).
+1. File information can be requested without authorization.
+1. Users can only add/remove their own files.
+1. SQL injections do not work.
+1. Every request is validated (e.g. username and email are required to create new user).
+
+Test cases were executed and validated using Postman and debugger.
+
+## Future improvements
+- Email could also be used to recover a forgotten password.
+- JWT audience and issuer could also be validated.
+
+## Local development
 Add the following secrets with .NET Core Secret Manager tool:
 ```
 $ cd server
@@ -75,6 +129,8 @@ $ dotnet user-secrets set "PowerUser:Password" <Password>
 $ dotnet user-secrets set "PowerUser:Name" <Name>
 $ dotnet user-secrets set "Smtp:Password" <Password>
 ```
+
+You can also configure settings in `appsettings.json` (e.g. change email server).
 
 Start the server:
 ```

@@ -29,9 +29,12 @@ public class JwtService : ITokenService {
             new Claim(TokenClaim.UserId, userId)
         };
 
+        // [SECURE] Add issuer and audience
         var tokenDescriptor = new SecurityTokenDescriptor {
             Subject = new ClaimsIdentity(claims),
             Expires = CreateExpireDateTime(type),
+            Issuer = this.TokenOptions.ValidIssuer,
+            Audience = this.TokenOptions.ValidAudience,
             SigningCredentials = new SigningCredentials(authSignKey, SecurityAlgorithms.HmacSha256)
         };
 

@@ -29,6 +29,7 @@ public class UserFileService : IUserFileService {
 
     public async Task<string?> AddUserFile(IFormFile file, User user) {
         var extension = Path.GetExtension(file.FileName);
+        // [SECURE] Check allowed extensions and file size
         if (!this.AllowedExtensions.Contains(extension) || file.Length > MAX_FILE_SIZE) {
             return null;
         }
